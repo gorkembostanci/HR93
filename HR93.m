@@ -8,7 +8,7 @@ beta=0.8;        %discount rate
 A=0.001;             %disutility of labor
 
 cE=1000;         %entry cost
-cF=300;          %fixed cost of operating
+cF=150;          %fixed cost of operating
 theta=0.64;      %drs
 
 tau=0.5;         %adj cost parameter
@@ -21,7 +21,7 @@ a=0.2;                 %constant of  idiosyncratic shock (chosen to generate mea
 
 p=1;                %normalized output price
 
-wzero=1.508;        %normalized wage rate (starting point)
+wzero=1.85;        %normalized wage rate (starting point)
 Mzero=0.2;          %measure of SS entrants (starting point)
 
 %1.2_Grids

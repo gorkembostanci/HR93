@@ -22,8 +22,8 @@ Npolicy= zeros(SGridSize,NGridSize);
 [Sgrid, Prob]=mytauchen(a,rho,sigsq_eps,Pars(13));
 Sgrid=exp(Sgrid);
 %Sgrid(1)=0;
-NgridLB=0;
-%NgridLB=DRS_INVMP(Sgrid(1),wguess,theta);
+%NgridLB=0;
+NgridLB=DRS_INVMP(Sgrid(1),w,theta);
 NgridUB=DRS_INVMP(Sgrid(SGridSize),w,theta);
 
 Ngrid=linspace(NgridLB,NgridUB,NGridSize);
