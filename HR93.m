@@ -2,16 +2,15 @@
 %1_Parameters-------------------------------------------------------------
 %---------------------------------------------------------------------------------
 
-
 %1.1_Technology and Preferences-------------------------------------
 beta=0.8;        %discount rate
 A=0.001;             %disutility of labor
 
 cE=1000;         %entry cost
-cF=150;          %fixed cost of operating
+cF=200;          %fixed cost of operating
 theta=0.64;      %drs
 
-tau=0.5;         %adj cost parameter
+tau=0.8;         %adj cost parameter
 
 %log(s_t)=a+rho*log(s_{t-1})+epsilon_t
 
@@ -22,17 +21,17 @@ a=0.2;                 %constant of  idiosyncratic shock (chosen to generate mea
 p=1;                %normalized output price
 
 wzero=1.85;        %normalized wage rate (starting point)
-Mzero=0.2;          %measure of SS entrants (starting point)
+Mzero=0.1;          %measure of SS entrants (starting point)
 
 %1.2_Grids
 
 NGridSize=200;
-SGridSize=4;
+SGridSize=6;
 
 %1.3_Accounting ---------------------------------------------------------------------
 Pars=[beta, A, cE, cF, theta, tau, rho, sigsq_eps, a, p, wzero, NGridSize, SGridSize, Mzero];
 v=zeros(1,SGridSize);
-v(3:4)=[0.3,0.7];    %entrant distribution probabilities
+v(4:5)=[0.3,0.7];    %entrant distribution probabilities
 ValuePrime_Old= zeros(SGridSize,NGridSize);
 
 mu_zero= zeros(NGridSize,SGridSize)+1/(NGridSize*SGridSize);
@@ -70,7 +69,7 @@ toc
 
 w_GE_Search=Results_Search{1};
 M_GE_Search=Results_Search{2};
-lambda_GE_Search=Results_Search{3};
+lambda_GE_Search=reshape(Results_Search{3}, [SGridSize,NGridSize]);
 NPolicy_GE_Search=Results_Search{4};
 Value_GE_Search=Results_Search{5};  
 Output_GE_Search=Results_Search{6};
@@ -84,16 +83,30 @@ toc
 
 w_Fless=Results_Fless{1};
 M_Fless=Results_Fless{2};
-lambda_Fless=Results_Fless{3};
+lambda_Fless=reshape(Results_Fless{3}, [SGridSize,NGridSize]);
 NPolicy_Fless=Results_Fless{4};
 Value_Fless=Results_Fless{5};  
-Output_Flessh=Results_Fless{6};
+Output_Fless=Results_Fless{6};
 
 
 %================================================================================
+figure
+mesh(Value_GE_Search,'FaceColor','g')
+hold on;
+mesh(Value_Fless,'FaceColor','r')
+hold off;
 
+figure
+mesh(NPolicy_GE_Search,'FaceColor','g')
+hold on;
+mesh(NPolicy_Fless,'FaceColor','r')
+hold off;
 
-
+figure
+mesh(lambda_GE_Search,'FaceColor','g')
+hold on;
+mesh(lambda_Fless,'FaceColor','r')
+hold off;
 %Eqbm - Hybrid================================================================
 
 

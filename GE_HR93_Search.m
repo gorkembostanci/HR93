@@ -12,6 +12,7 @@ sigsq_eps=Pars(8);
 a=Pars(9);
 %p=Pars(10);
 w=Pars(11);
+Mzero=Pars(14);
 
 entryvector=[zeros(1,SGridSize),v,zeros(1,SGridSize*(NGridSize-2))];
 
@@ -98,14 +99,16 @@ lambda=zeros(NGridSize*SGridSize,1)+1/(NGridSize*SGridSize);
 
 
 %===============5. Entry Determination ===========================================
+fprintf('entry determination started')
 tic
 options = optimset('Tolfun',1e-5,'MaxFunEvals',10000000,'MaxIter',1000000);
     
-    M0=0;
+   
     h=@(M)Mfinder_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, A, n_N);
 
-    [M,~]=fsolve(h, M0, options);
+    [M,~]=fsolve(h, Mzero, options);
     lambda=LambdaCalculator_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, n_N);
+
 fprintf('entry determination was done in \n')
 toc
 
@@ -118,8 +121,7 @@ RealizedOutput=0;
 for jj=1:SGridSize
     for kk=1:NGridSize
         RealizedOutput=RealizedOutput+lambda_Matrix(jj,kk)*...
-            DRS(Sgrid(jj), Ngrid(kk), theta);
-    
+            DRS(Sgrid(jj), Ngrid(kk), theta);    
     end
 end
 
@@ -129,7 +131,8 @@ Results={w,M,lambda,Npolicy, Value, RealizedOutput};
 figure
 for ii=1:SGridSize
 subplot (3,SGridSize,ii)
-plot(Ngrid,Ngrid(Npolicy(ii,:)),'LineWidth',1);
+plot(Ngrid,Ngrid(Npolicy(ii,:)),'LineWidth',1);hold on;
+refline(1,0);hold off;
 end
 for ii=(SGridSize+1):(2*SGridSize)
 subplot (3,SGridSize,ii)
