@@ -11,7 +11,8 @@ sigsq_eps=Pars(8);
 a=Pars(9);
 p=Pars(10);
 w=Pars(11);
-
+sigma=Pars(15);
+kappa=Pars(16);
 
 
 %--------------------2-Initialize -------------------------
@@ -23,8 +24,8 @@ Npolicy= zeros(SGridSize,NGridSize);
 Sgrid=exp(Sgrid);
 %Sgrid(1)=0;
 %NgridLB=0;
-NgridLB=DRS_INVMP(Sgrid(1),w,theta);
-NgridUB=DRS_INVMP(Sgrid(SGridSize),w,theta);
+NgridLB=DRS_INVMP(Sgrid(1),w,theta, sigma, kappa);
+NgridUB=DRS_INVMP(Sgrid(SGridSize),w,theta, sigma, kappa);
 
 Ngrid=linspace(NgridLB,NgridUB,NGridSize);
 %Ngrid2=logspace(log(NgridLB),log(NgridUB),NGridSize);
@@ -37,7 +38,6 @@ Ngrid(1)=0;
 
 Discrepancy=1;
 while Discrepancy>0.000001
-    
     for Sstate = 1:SGridSize   %Iterating over states
         Nchosen=1;
         for Nstate = 1:NGridSize
@@ -46,7 +46,11 @@ while Discrepancy>0.000001
             star=0;
             for Nchoice=Nchosen:NGridSize   %Iterating over choices
                 
-                Profit= p*DRS(Sgrid(Sstate), Ngrid(Nchoice), theta)-w*Ngrid(Nchoice)-...
+                RentedChoice=(((theta-sigma)*Sgrid(Sstate)*Ngrid(Nchoice)^sigma)/...
+                    (w*kappa))^(1/(1-theta+sigma));
+                
+                Profit= p*DRS(Sgrid(Sstate), Ngrid(Nchoice), theta, RentedChoice, sigma)-...
+                    w*Ngrid(Nchoice)-w*kappa*RentedChoice-...
                     AdjCostHR(tau, Ngrid(Nstate), Ngrid(Nchoice));
                 FutureUtil=0;
                 
@@ -69,19 +73,16 @@ while Discrepancy>0.000001
                     break
 %                     fprintf('broken at ')
 %                     Nchoice
-                end
-                
+                end                
             end
             ValuePrime(Sstate,Nstate)=ContUtilPrime;
             Npolicy(Sstate,Nstate)=Nchosen;
             
-        end
-        
+        end        
     end
     
     Discrepancy=max(abs(ValuePrime-ValuePrime_Old));
-    ValuePrime_Old=ValuePrime;
-    
+    ValuePrime_Old=ValuePrime;    
 end
 
 Results={ValuePrime, Npolicy};

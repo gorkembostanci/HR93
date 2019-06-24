@@ -13,9 +13,11 @@ a=Pars(9);
 %p=Pars(10);
 w=Pars(11);
 Mzero=Pars(14);
+sigma=Pars(15);
+kappa=Pars(16);
+RentedChoice=zeros(SGridSize,NGridSize);
 
 entryvector=[zeros(1,SGridSize),v,zeros(1,SGridSize*(NGridSize-2))];
-
 
 %===============1. Wage Determination         =========================================
 tic
@@ -40,8 +42,8 @@ Value=Results{1};
 [Sgrid, Prob]=mytauchen(a,rho,sigsq_eps,SGridSize);
 Sgrid=exp(Sgrid);
 
-NgridLB=DRS_INVMP(Sgrid(1),w,theta);
-NgridUB=1.2*DRS_INVMP(Sgrid(SGridSize),w,theta);
+NgridLB=DRS_INVMP(Sgrid(1),w, theta, sigma, kappa);
+NgridUB=1.2*DRS_INVMP(Sgrid(SGridSize),w, theta, sigma, kappa);
 
 Ngrid=linspace(NgridLB,NgridUB,NGridSize);Ngrid(1)=0;
 
@@ -120,12 +122,14 @@ RealizedOutput=0;
 
 for jj=1:SGridSize
     for kk=1:NGridSize
+        RentedChoice(jj,kk)=(((theta-sigma)*Sgrid(jj)*Ngrid(kk)^sigma)/...
+            w*kappa)^(1/(1-theta+sigma));
         RealizedOutput=RealizedOutput+lambda_Matrix(jj,kk)*...
-            DRS(Sgrid(jj), Ngrid(kk), theta);    
+            DRS(Sgrid(jj), Ngrid(kk), theta, RentedChoice(jj,kk), sigma);    
     end
 end
 
-Results={w,M,lambda,Npolicy, Value, RealizedOutput};
+Results={w,M,lambda,Npolicy, Value, RealizedOutput, RentedChoice};
 %===============7. Plotting Results ===========================================
 
 figure
@@ -140,5 +144,8 @@ plot(Ngrid,Value(ii-SGridSize,:),'LineWidth',1);
 end
 subplot (3,SGridSize,2*SGridSize+1)
 mesh(Ngrid,Sgrid,lambda_Matrix)
+
+subplot (3,SGridSize,2*SGridSize+2)
+mesh(Ngrid,Sgrid,RentedChoice)
 
 end

@@ -7,9 +7,11 @@ beta=0.8;        %discount rate
 A=0.001;             %disutility of labor
 
 cE=1000;         %entry cost
-cF=200;          %fixed cost of operating
+cF=250;          %fixed cost of operating
 theta=0.64;      %drs
-
+sigma=0.4;       %hired share
+kappa=1.5;       %renting cost   
+    
 tau=0.8;         %adj cost parameter
 
 %log(s_t)=a+rho*log(s_{t-1})+epsilon_t
@@ -20,7 +22,7 @@ a=0.2;                 %constant of  idiosyncratic shock (chosen to generate mea
 
 p=1;                %normalized output price
 
-wzero=1.85;        %normalized wage rate (starting point)
+wzero=0.55;        %normalized wage rate (starting point)
 Mzero=0.1;          %measure of SS entrants (starting point)
 
 %1.2_Grids
@@ -29,7 +31,8 @@ NGridSize=200;
 SGridSize=6;
 
 %1.3_Accounting ---------------------------------------------------------------------
-Pars=[beta, A, cE, cF, theta, tau, rho, sigsq_eps, a, p, wzero, NGridSize, SGridSize, Mzero];
+Pars=[beta, A, cE, cF, theta, tau, rho, sigsq_eps, a, p, wzero, NGridSize,...
+    SGridSize, Mzero, sigma, kappa];
 v=zeros(1,SGridSize);
 v(4:5)=[0.3,0.7];    %entrant distribution probabilities
 ValuePrime_Old= zeros(SGridSize,NGridSize);
