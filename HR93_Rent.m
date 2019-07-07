@@ -27,8 +27,7 @@ Mzero=0.1;          %measure of SS entrants (starting point)
 
 %1.2_Grids
 
-NGridSize=200;
-SGridSize=6;
+NGridSize=200;SGridSize=6;
 
 %1.3_Accounting ---------------------------------------------------------------------
 Pars=[beta, A, cE, cF, theta, tau, rho, sigsq_eps, a, p, wzero, NGridSize,...

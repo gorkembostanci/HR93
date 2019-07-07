@@ -7,7 +7,7 @@ while abs(Discrepancy2)>0.0001
    lambdaprime=T'*lambda+entry';
    Discrepancy2=max(abs(lambda-lambdaprime));
    lambda=lambdaprime;
-   Discrepancy2
+   Discrepancy2;
 end
 LaborDemand=0;
 for kk=1:NGridSize*SGridSize
