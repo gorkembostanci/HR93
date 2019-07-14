@@ -9,7 +9,8 @@ A=0.001;             %disutility of labor
 cE=1000;         %entry cost
 cF=250;          %fixed cost of operating
 theta=0.64;      %drs
-sigma=0.4;       %hired share
+sigma=0.4/0.64;  %hired share
+gamma=0.75;       %Elasticity of substitution
 kappa=1.5;       %renting cost   
     
 tau=0.8;         %adj cost parameter
@@ -23,18 +24,16 @@ a=0.2;                 %constant of  idiosyncratic shock (chosen to generate mea
 p=1;                %normalized output price
 
 wzero=0.55;        %normalized wage rate (starting point)
-Mzero=0.01;          %measure of SS entrants (starting point)
+Mzero=0.4;          %measure of SS entrants (starting point)
 
-
-gridamp=1.2;   %determines upper bound of the grid
-
+gridamp=1.5;
 %1.2_Grids
 
 NGridSize=200;SGridSize=6;
 
 %1.3_Accounting ---------------------------------------------------------------------
 Pars=[beta, A, cE, cF, theta, tau, rho, sigsq_eps, a, p, wzero, NGridSize,...
-    SGridSize, Mzero, sigma, kappa, gridamp];
+    SGridSize, Mzero, sigma, kappa, gamma, gridamp];
 v=zeros(1,SGridSize);
 v(4:5)=[0.3,0.7];    %entrant distribution probabilities
 ValuePrime_Old= zeros(SGridSize,NGridSize);
@@ -48,7 +47,7 @@ Sgrid=exp(Sgrid);
 
 %-------------Adj Cost----------------------------
 tic
-Results_Search=GE_HR93_Search(Pars,v);
+Results_Search=GE_HR93_Search_CES(Pars,v);
 fprintf('Baseline model solved in \n')
 toc
 
@@ -61,14 +60,14 @@ Output_GE_Search=Results_Search{6};
 Rented_GE_Search=Results_Search{7};
 
 
-NgridLB=DRS_INVMP(Sgrid(1),w_GE_Search, theta, sigma, kappa);
-NgridUB=gridamp*DRS_INVMP(Sgrid(SGridSize),w_GE_Search, theta, sigma, kappa);
+NgridLB=DRS_INVMP_CES(Sgrid(1),w_GE_Search, theta, sigma, kappa,gamma);
+NgridUB=gridamp*DRS_INVMP_CES(Sgrid(SGridSize),w_GE_Search, theta, sigma, kappa,gamma);
 
 Ngrid=linspace(NgridLB,NgridUB,NGridSize);Ngrid(1)=0;
 %-------------Frictionless----------------------------
 
 tic
-Results_Fless=GE_HR93_Search_Fless(Pars,v);
+Results_Fless=GE_HR93_Search_Fless_CES(Pars,v);
 fprintf('Frictionless model solved in \n')
 toc
 
@@ -81,8 +80,8 @@ Output_Fless=Results_Fless{6};
 Rented_Fless=Results_Fless{7};
 
 
-NgridLB=DRS_INVMP(Sgrid(1),w_Fless, theta, sigma, kappa);
-NgridUB=gridamp*DRS_INVMP(Sgrid(SGridSize),w_Fless, theta, sigma, kappa);
+NgridLB=DRS_INVMP_CES(Sgrid(1),w_Fless, theta, sigma, kappa, gamma);
+NgridUB=gridamp*DRS_INVMP_CES(Sgrid(SGridSize),w_Fless, theta, sigma, kappa, gamma);
 
 Ngrid_Fless=linspace(NgridLB,NgridUB,NGridSize);Ngrid_Fless(1)=0;
 %================================================================================

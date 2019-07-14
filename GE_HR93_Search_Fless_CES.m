@@ -1,4 +1,4 @@
-function  Results=GE_HR93_Search_Fless(Pars,v)
+function  Results=GE_HR93_Search_Fless_CES(Pars,v)
 NGridSize=Pars(12);
 SGridSize=Pars(13);
 %beta=Pars(1);
@@ -15,7 +15,9 @@ w=Pars(11);
 Mzero=Pars(14);
 sigma=Pars(15);
 kappa=Pars(16);
-gridamp=Pars(17);
+gamma=Pars(17);
+gridamp=Pars(18);
+
 RentedChoice=zeros(SGridSize,NGridSize);
 
 entryvector=[zeros(1,SGridSize),v,zeros(1,SGridSize*(NGridSize-2))];
@@ -25,7 +27,7 @@ entryvector=[zeros(1,SGridSize),v,zeros(1,SGridSize*(NGridSize-2))];
 options = optimset('Tolfun',1e-2,'MaxFunEvals',10000000,'MaxIter',1000000);
     
     Value0= zeros(SGridSize,NGridSize);
-    g=@(Variable)wfinder_HR93_Fless(Variable,v,Pars,Value0);
+    g=@(Variable)wfinder_HR93_Fless_CES(Variable,v,Pars,Value0);
 
     [w,~]=fsolve(g, w, options);
 
@@ -33,7 +35,7 @@ options = optimset('Tolfun',1e-2,'MaxFunEvals',10000000,'MaxIter',1000000);
 %toc
 %==============2. Calculating Value/Poliy Functions       =============================
 Pars(11)=w;
-Results=VFI_HR93_Fless_IterR(Pars,Value0);
+Results=VFI_HR93_Fless_IterR_CES(Pars,Value0);
 Npolicy=Results{2};
 Value=Results{1};
 
@@ -43,8 +45,8 @@ Value=Results{1};
 [Sgrid, Prob]=mytauchen(a,rho,sigsq_eps,SGridSize);
 Sgrid=exp(Sgrid);
 
-NgridLB=DRS_INVMP(Sgrid(1),w, theta, sigma, kappa);
-NgridUB=gridamp*DRS_INVMP(Sgrid(SGridSize),w, theta, sigma, kappa);
+NgridLB=DRS_INVMP_CES(Sgrid(1),w, theta, sigma, kappa,gamma);
+NgridUB=gridamp*DRS_INVMP_CES(Sgrid(SGridSize),w, theta, sigma, kappa, gamma);
 
 Ngrid=linspace(NgridLB,NgridUB,NGridSize);Ngrid(1)=0;
 

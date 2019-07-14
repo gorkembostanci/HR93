@@ -6,7 +6,7 @@ function  Discrepancy=wfinder_HR93_Fless(w,v,Pars,Value0)
     Value=Result{1};
     
     Discrepancy=(cE-v*(Value(:,1)))^2;
-    Discrepancy
+    %Discrepancy
 end
 
 

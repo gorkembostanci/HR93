@@ -15,12 +15,13 @@ w=Pars(11);
 Mzero=Pars(14);
 sigma=Pars(15);
 kappa=Pars(16);
+gridamp=Pars(17);
 RentedChoice=zeros(SGridSize,NGridSize);
 
 entryvector=[zeros(1,SGridSize),v,zeros(1,SGridSize*(NGridSize-2))];
 
 %===============1. Wage Determination         =========================================
-tic
+%tic
 options = optimset('Tolfun',1e-2,'MaxFunEvals',10000000,'MaxIter',1000000);
     
     Value0= zeros(SGridSize,NGridSize);
@@ -28,8 +29,8 @@ options = optimset('Tolfun',1e-2,'MaxFunEvals',10000000,'MaxIter',1000000);
 
     [w,~]=fsolve(g, w, options);
 
-fprintf('wage determination was done in \n')
-toc
+%fprintf('wage determination was done in \n')
+%toc
 %==============2. Calculating Value/Poliy Functions       =============================
 Pars(11)=w;
 Results=VFI_HR93_IterR(Pars,Value0);
@@ -43,7 +44,7 @@ Value=Results{1};
 Sgrid=exp(Sgrid);
 
 NgridLB=DRS_INVMP(Sgrid(1),w, theta, sigma, kappa);
-NgridUB=1.2*DRS_INVMP(Sgrid(SGridSize),w, theta, sigma, kappa);
+NgridUB=gridamp*DRS_INVMP(Sgrid(SGridSize),w, theta, sigma, kappa);
 
 Ngrid=linspace(NgridLB,NgridUB,NGridSize);Ngrid(1)=0;
 
@@ -102,17 +103,17 @@ lambda=zeros(NGridSize*SGridSize,1)+1/(NGridSize*SGridSize);
 
 %===============5. Entry Determination ===========================================
 fprintf('entry determination started')
-tic
+%tic
 options = optimset('Tolfun',1e-5,'MaxFunEvals',10000000,'MaxIter',1000000);
     
    
-    h=@(M)Mfinder_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, A, n_N);
+    h=@(M)Mfinder_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, A, n_N, Ngrid);
 
     [M,~]=fsolve(h, Mzero, options);
-    lambda=LambdaCalculator_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, n_N);
+    lambda=LambdaCalculator_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, n_N, Ngrid);
 
-fprintf('entry determination was done in \n')
-toc
+%fprintf('entry determination was done in \n')
+%toc
 
 
 lambda_Matrix=reshape(lambda, [SGridSize,NGridSize]);
@@ -145,7 +146,6 @@ end
 subplot (3,SGridSize,2*SGridSize+1)
 mesh(Ngrid,Sgrid,lambda_Matrix)
 
-subplot (3,SGridSize,2*SGridSize+2)
-mesh(Ngrid,Sgrid,RentedChoice)
+
 
 end

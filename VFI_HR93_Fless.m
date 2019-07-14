@@ -13,7 +13,7 @@ p=Pars(10);
 w=Pars(11);
 sigma=Pars(15);
 kappa=Pars(16);
-
+gridamp=Pars(17);
 
 %--------------------2-Initialize -------------------------
 
@@ -25,7 +25,7 @@ Sgrid=exp(Sgrid);
 %Sgrid(1)=0;
 %NgridLB=0;
 NgridLB=DRS_INVMP(Sgrid(1),w,theta, sigma, kappa);
-NgridUB=DRS_INVMP(Sgrid(SGridSize),w,theta, sigma, kappa);
+NgridUB=gridamp*DRS_INVMP(Sgrid(SGridSize),w,theta, sigma, kappa);
 
 Ngrid=linspace(NgridLB,NgridUB,NGridSize);
 %Ngrid2=logspace(log(NgridLB),log(NgridUB),NGridSize);

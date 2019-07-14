@@ -1,5 +1,5 @@
 function  Results_lambda=LambdaCalculator_HR93(M, entryvector, lambda, T, ...
-    NGridSize, SGridSize, n_N)
+    NGridSize, SGridSize, n_N, Ngrid)
 entry=M*entryvector;
 Discrepancy2=1;
 
@@ -12,7 +12,7 @@ while abs(Discrepancy2)>0.0001
 end
 LaborDemand=0;
 for kk=1:NGridSize*SGridSize
-LaborDemand=LaborDemand+lambda(kk)*n_N(kk);
+LaborDemand=LaborDemand+lambda(kk)*Ngrid(n_N(kk));
 end
 
 Results_lambda=lambda;

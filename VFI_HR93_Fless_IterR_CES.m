@@ -1,4 +1,4 @@
-function  Results=VFI_HR93_IterR(Pars,ValuePrime_Old)
+function  Results=VFI_HR93_Fless_IterR_CES(Pars,ValuePrime_Old)
 NGridSize=Pars(12);
 SGridSize=Pars(13);
 beta=Pars(1);
@@ -13,8 +13,8 @@ p=Pars(10);
 w=Pars(11);
 sigma=Pars(15);
 kappa=Pars(16);
-gridamp=Pars(17);
-
+gamma=Pars(17);
+gridamp=Pars(18);
 %--------------------2-Initialize -------------------------
 
 ValuePrime=ValuePrime_Old;
@@ -24,8 +24,8 @@ Npolicy= zeros(SGridSize,NGridSize);
 Sgrid=exp(Sgrid);
 %Sgrid(1)=0;
 %NgridLB=0;
-NgridLB=DRS_INVMP(Sgrid(1),w,theta, sigma, kappa);
-NgridUB=gridamp*DRS_INVMP(Sgrid(SGridSize),w,theta, sigma, kappa);
+NgridLB=DRS_INVMP_CES(Sgrid(1),w,theta, sigma, kappa, gamma);
+NgridUB=gridamp*DRS_INVMP_CES(Sgrid(SGridSize),w,theta, sigma, kappa, gamma);
 
 Ngrid=linspace(NgridLB,NgridUB,NGridSize);
 %Ngrid2=logspace(log(NgridLB),log(NgridUB),NGridSize);
@@ -42,16 +42,16 @@ while Discrepancy>0.000001
         Nchosen=1;
         for Nstate = 1:NGridSize
             %Utilize monotonicity and concavity later on
-            ContUtilPrime=-AdjCostHR(tau, Ngrid(Nstate), 0);
+            ContUtilPrime=-AdjCostHR_Fless(tau, Ngrid(Nstate), 0);
             star=0;
             for Nchoice=Nchosen:NGridSize   %Iterating over choices
                 
                 RentedChoice=(((theta-sigma)*Sgrid(Sstate)*Ngrid(Nchoice)^sigma)/...
                     (w*kappa))^(1/(1-theta+sigma));
                 
-                Profit= p*DRS(Sgrid(Sstate), Ngrid(Nchoice), theta, RentedChoice, sigma)-...
+                Profit= p*DRS_CES(Sgrid(Sstate), Ngrid(Nchoice), theta, RentedChoice, sigma,gamma)-...
                     w*Ngrid(Nchoice)-w*kappa*RentedChoice-...
-                    AdjCostHR(tau, Ngrid(Nstate), Ngrid(Nchoice));
+                    AdjCostHR_Fless(tau, Ngrid(Nstate), Ngrid(Nchoice));
                 FutureUtil=0;
                 
                 for Snext=1:SGridSize
@@ -62,7 +62,7 @@ while Discrepancy>0.000001
                 ContUtil=Profit+beta*FutureUtil-p*cF;
                 
                 if Nchoice==1
-                    ContUtil=-AdjCostHR(tau, Ngrid(Nstate), 0);
+                    ContUtil=-AdjCostHR_Fless(tau, Ngrid(Nstate), 0);
                 end
                 
                 if ContUtil>ContUtilPrime
@@ -93,9 +93,9 @@ while Discrepancy>0.000001
                 RentedChoice=(((theta-sigma)*Sgrid(Sstate)*Ngrid(Npolicy(Sstate,Nstate))^sigma)/...
                     (w*kappa))^(1/(1-theta+sigma));
                 
-                Profit= p*DRS(Sgrid(Sstate), Ngrid(Npolicy(Sstate,Nstate)), theta, RentedChoice, sigma)-...
+                Profit= p*DRS_CES(Sgrid(Sstate), Ngrid(Npolicy(Sstate,Nstate)), theta, RentedChoice, sigma,gamma)-...
                     w*Ngrid(Npolicy(Sstate,Nstate))-w*kappa*RentedChoice-...
-                    AdjCostHR(tau, Ngrid(Nstate), Ngrid(Npolicy(Sstate,Nstate)));
+                    AdjCostHR_Fless(tau, Ngrid(Nstate), Ngrid(Npolicy(Sstate,Nstate)));
                 FutureUtil=0;
                 
                 for Snext=1:SGridSize
@@ -106,7 +106,7 @@ while Discrepancy>0.000001
                 ContUtilV=Profit+beta*FutureUtil-p*cF;
                 
                 if Npolicy(Sstate,Nstate)==1
-                    ContUtilV=-AdjCostHR(tau, Ngrid(Nstate), 0);
+                    ContUtilV=-AdjCostHR_Fless(tau, Ngrid(Nstate), 0);
                 end
                 ValuePrime(Sstate,Nstate)=ContUtilV;
             end
