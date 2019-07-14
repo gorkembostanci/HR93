@@ -19,7 +19,10 @@ gridamp=Pars(18);
 
 ValuePrime=ValuePrime_Old;
 Npolicy= zeros(SGridSize,NGridSize);
+RentedChoice=zeros(SGridSize,NGridSize);
+
 %--------------------3-Deterministic Steady State and Grid Formation --
+
 [Sgrid, Prob]=mytauchen(a,rho,sigsq_eps,SGridSize);
 Sgrid=exp(Sgrid);
 %Sgrid(1)=0;
@@ -35,30 +38,33 @@ Ngrid(1)=0;
 %--------------------4-Iteration -------------------------
 %options = optimset('Tolfun',1e-8,'MaxFunEvals',10000000,'MaxIter',1000000);
 
+options = optimset('Tolfun',1e-8,'MaxFunEvals',10000000,'MaxIter',1000000, 'Display','off');
 
-Discrepancy=1;
-while Discrepancy>0.000001
+ValueDiscrepancy=1;
+while ValueDiscrepancy>0.000001
     for Sstate = 1:SGridSize   %Iterating over states
         Nchosen=1;
+        RentedChosen=0.001;
         for Nstate = 1:NGridSize
             %Utilize monotonicity and concavity later on
             ContUtilPrime=-AdjCostHR(tau, Ngrid(Nstate), 0);
             star=0;
+            
             for Nchoice=Nchosen:NGridSize   %Iterating over choices
+                g=@(Variable)Rentedfinder_HR93_CES(Variable,Pars,Ngrid(Nchoice),Sgrid(Sstate));
                 
-                RentedChoice=(((theta-sigma)*Sgrid(Sstate)*Ngrid(Nchoice)^sigma)/...
-                    (w*kappa))^(1/(1-theta+sigma));
+                [RentedChosen,~]=fsolve(g, RentedChosen, options);
                 
-                Profit= p*DRS_CES(Sgrid(Sstate), Ngrid(Nchoice), theta, RentedChoice, sigma, gamma)-...
-                    w*Ngrid(Nchoice)-w*kappa*RentedChoice-...
+                Profit= p*DRS_CES(Sgrid(Sstate), Ngrid(Nchoice), theta, RentedChosen, sigma, gamma)-...
+                    w*Ngrid(Nchoice)-w*kappa*RentedChosen-...
                     AdjCostHR(tau, Ngrid(Nstate), Ngrid(Nchoice));
                 FutureUtil=0;
                 
                 for Snext=1:SGridSize
                     FutureUtil = FutureUtil+...
                         Prob(Sstate,Snext)*ValuePrime_Old(Snext,Nchoice);
-                end                
-                                        
+                end
+                
                 ContUtil=Profit+beta*FutureUtil-p*cF;
                 
                 if Nchoice==1
@@ -69,20 +75,21 @@ while Discrepancy>0.000001
                     ContUtilPrime=ContUtil;
                     Nchosen=Nchoice;
                     star=1;
+                    RentedChoice(Sstate,Nstate)=RentedChosen;
                 elseif star==1 && ContUtil<ContUtilPrime
                     break
-%                     fprintf('broken at ')
-%                     Nchoice
-                end                
+                    %                     fprintf('broken at ')
+                    %                     Nchoice
+                end
             end
             ValuePrime(Sstate,Nstate)=ContUtilPrime;
             Npolicy(Sstate,Nstate)=Nchosen;
             
-        end        
+        end
     end
     
-    Discrepancy=max(abs(ValuePrime-ValuePrime_Old));
-    ValuePrime_Old=ValuePrime; 
+    ValueDiscrepancy=max(abs(ValuePrime-ValuePrime_Old),[],'all');
+    ValuePrime_Old=ValuePrime;
     Discrepancy2=1;
     
     while Discrepancy2>0.000001
@@ -90,18 +97,15 @@ while Discrepancy>0.000001
             for Nstate = 1:NGridSize
                 %Utilize monotonicity and concavity later on
                 %star=0;
-                RentedChoice=(((theta-sigma)*Sgrid(Sstate)*Ngrid(Npolicy(Sstate,Nstate))^sigma)/...
-                    (w*kappa))^(1/(1-theta+sigma));
-                
-                Profit= p*DRS_CES(Sgrid(Sstate), Ngrid(Npolicy(Sstate,Nstate)), theta, RentedChoice, sigma,gamma)-...
-                    w*Ngrid(Npolicy(Sstate,Nstate))-w*kappa*RentedChoice-...
+                Profit= p*DRS_CES(Sgrid(Sstate), Ngrid(Npolicy(Sstate,Nstate)), theta, RentedChoice(Sstate,Nstate), sigma,gamma)-...
+                    w*Ngrid(Npolicy(Sstate,Nstate))-w*kappa*RentedChoice(Sstate,Nstate)-...
                     AdjCostHR(tau, Ngrid(Nstate), Ngrid(Npolicy(Sstate,Nstate)));
                 FutureUtil=0;
                 
                 for Snext=1:SGridSize
                     FutureUtil = FutureUtil+...
                         Prob(Sstate,Snext)*ValuePrime_Old(Snext,Npolicy(Sstate,Nstate));
-                end 
+                end
                 
                 ContUtilV=Profit+beta*FutureUtil-p*cF;
                 
@@ -115,10 +119,11 @@ while Discrepancy>0.000001
         
         
         
-        Discrepancy2=max(abs(ValuePrime-ValuePrime_Old));
+        Discrepancy2=max(abs(ValuePrime-ValuePrime_Old),[],'all');
         ValuePrime_Old=ValuePrime;
+        Discrepancy2;
     end
-    
+    ValueDiscrepancy
 end
 
 Results={ValuePrime, Npolicy};
