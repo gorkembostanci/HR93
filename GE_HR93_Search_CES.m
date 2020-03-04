@@ -38,6 +38,8 @@ Pars(11)=w;
 Results=VFI_HR93_IterR_CES(Pars,Value0);
 Npolicy=Results{2};
 Value=Results{1};
+Rpolicy=Results{3};
+
 
 %===============3. Grid Construction        ===========================================
 
@@ -56,7 +58,7 @@ n_N(jj)=floor((jj-1)/SGridSize)+1;
 n_S(jj)=mod(jj-1,SGridSize)+1;
 end
 
-%===============4. Transfer Function        ===========================================
+%===============4. Transfer Function===========================================
 
 T=zeros(NGridSize*SGridSize,NGridSize*SGridSize);
 
@@ -109,10 +111,12 @@ fprintf('entry determination started')
 options = optimset('Tolfun',1e-5,'MaxFunEvals',10000000,'MaxIter',1000000);
     
    
-    h=@(M)Mfinder_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, A, n_N, Ngrid);
+    h=@(M)Mfinder_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, A,...
+        n_N, n_S, Ngrid, Rpolicy, Npolicy);
 
     [M,~]=fsolve(h, Mzero, options);
-    lambda=LambdaCalculator_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, n_N, Ngrid);
+    lambda=LambdaCalculator_HR93(M, entryvector, lambda, T, NGridSize, SGridSize,...
+        n_N, n_S,  Ngrid, Rpolicy, Npolicy);
 
 %fprintf('entry determination was done in \n')
 %toc
@@ -122,13 +126,14 @@ lambda_Matrix=reshape(lambda, [SGridSize,NGridSize]);
 
 %===============6. MisAllocation (Given Entry) ===================================
 RealizedOutput=0;
-
+RentedChosen=0.01;
 for jj=1:SGridSize
     for kk=1:NGridSize
-        RentedChoice(jj,kk)=(((theta-sigma)*Sgrid(jj)*Ngrid(kk)^sigma)/...
-            w*kappa)^(1/(1-theta+sigma));
-        RealizedOutput=RealizedOutput+lambda_Matrix(jj,kk)*...
-            DRS(Sgrid(jj), Ngrid(kk), theta, RentedChoice(jj,kk), sigma);    
+      g=@(Variable)Rentedfinder_HR93_CES(Variable,Pars,Ngrid(Npolicy(jj,kk)),Sgrid(jj));          
+      [RentedChoice(jj,kk),~]=fsolve(g, RentedChosen, options);
+      RentedChosen=RentedChoice(jj,kk);
+      RealizedOutput=RealizedOutput+lambda_Matrix(jj,kk)*...
+            DRS_CES(Sgrid(jj), Ngrid(Npolicy(jj,kk)), theta, RentedChoice(jj,kk), sigma);    
     end
 end
 

@@ -22,7 +22,7 @@ entryvector=[zeros(1,SGridSize),v,zeros(1,SGridSize*(NGridSize-2))];
 
 %===============1. Wage Determination         =========================================
 %tic
-options = optimset('Tolfun',1e-2,'MaxFunEvals',10000000,'MaxIter',1000000);
+options = optimset('Tolfun',1e-3,'MaxFunEvals',10000000,'MaxIter',1000000);
     
     Value0= zeros(SGridSize,NGridSize);
     g=@(Variable)wfinder_HR93(Variable,v,Pars,Value0);
@@ -36,6 +36,7 @@ Pars(11)=w;
 Results=VFI_HR93_IterR(Pars,Value0);
 Npolicy=Results{2};
 Value=Results{1};
+Rpolicy=Results{3};
 
 %===============3. Grid Construction        ===========================================
 
@@ -107,10 +108,12 @@ fprintf('entry determination started')
 options = optimset('Tolfun',1e-5,'MaxFunEvals',10000000,'MaxIter',1000000);
     
    
-    h=@(M)Mfinder_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, A, n_N, Ngrid);
+    h=@(M)Mfinder_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, A,...
+        n_N, n_S, Ngrid, Rpolicy, Npolicy);
 
     [M,~]=fsolve(h, Mzero, options);
-    lambda=LambdaCalculator_HR93(M, entryvector, lambda, T, NGridSize, SGridSize, n_N, Ngrid);
+    lambda=LambdaCalculator_HR93(M, entryvector, lambda, T, NGridSize, SGridSize,...
+        n_N, n_S,  Ngrid, Rpolicy, Npolicy);
 
 %fprintf('entry determination was done in \n')
 %toc
@@ -123,10 +126,10 @@ RealizedOutput=0;
 
 for jj=1:SGridSize
     for kk=1:NGridSize
-        RentedChoice(jj,kk)=(((theta-sigma)*Sgrid(jj)*Ngrid(kk)^sigma)/...
+        RentedChoice(jj,kk)=(((theta-sigma)*Sgrid(jj)*Ngrid(Npolicy(jj,kk))^sigma)/...
             w*kappa)^(1/(1-theta+sigma));
         RealizedOutput=RealizedOutput+lambda_Matrix(jj,kk)*...
-            DRS(Sgrid(jj), Ngrid(kk), theta, RentedChoice(jj,kk), sigma);    
+            DRS(Sgrid(jj), Ngrid(Npolicy(jj,kk)), theta, RentedChoice(jj,kk), sigma);    
     end
 end
 

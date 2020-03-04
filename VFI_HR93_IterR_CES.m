@@ -126,7 +126,7 @@ while ValueDiscrepancy>0.000001
     ValueDiscrepancy
 end
 
-Results={ValuePrime, Npolicy};
+Results={ValuePrime, Npolicy, RentedChoice};
 
 % figure
 % for ii=1:6

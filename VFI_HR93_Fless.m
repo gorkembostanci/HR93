@@ -19,6 +19,8 @@ gridamp=Pars(17);
 
 ValuePrime=ValuePrime_Old;
 Npolicy= zeros(SGridSize,NGridSize);
+RentedChoice=zeros(SGridSize,NGridSize);
+
 %--------------------3-Deterministic Steady State and Grid Formation --
 [Sgrid, Prob]=mytauchen(a,rho,sigsq_eps,SGridSize);
 Sgrid=exp(Sgrid);
@@ -46,11 +48,11 @@ while Discrepancy>0.000001
             star=0;
             for Nchoice=Nchosen:NGridSize   %Iterating over choices
                 
-                RentedChoice=(((theta-sigma)*Sgrid(Sstate)*Ngrid(Nchoice)^sigma)/...
+                RentedChosen=(((theta-sigma)*Sgrid(Sstate)*Ngrid(Nchoice)^sigma)/...
                     (w*kappa))^(1/(1-theta+sigma));
                 
-                Profit= p*DRS(Sgrid(Sstate), Ngrid(Nchoice), theta, RentedChoice, sigma)-...
-                    w*Ngrid(Nchoice)-w*kappa*RentedChoice-...
+                Profit= p*DRS(Sgrid(Sstate), Ngrid(Nchoice), theta, RentedChosen, sigma)-...
+                    w*Ngrid(Nchoice)-w*kappa*RentedChosen-...
                     AdjCostHR_Fless(tau, Ngrid(Nstate), Ngrid(Nchoice));
                 FutureUtil=0;
                 
@@ -69,6 +71,7 @@ while Discrepancy>0.000001
                     ContUtilPrime=ContUtil;
                     Nchosen=Nchoice;
                     star=1;
+                    RentedChoice(Sstate,Nstate)=RentedChosen;
                 elseif star==1 && ContUtil<ContUtilPrime
                     break
 %                     fprintf('broken at ')
